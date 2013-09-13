@@ -75,7 +75,7 @@ namespace HelloWorldJwt
                 Subject = new ClaimsIdentity(new Claim[]
                         {
                             new Claim(ClaimTypes.Name, "Tugberk"),
-                            new Claim(ClaimTypes.Role, "Sales"), 
+                            new Claim(ClaimTypes.Role, "Sales")
                         }),
                 TokenIssuerName = "self",
                 AppliesToAddress = "http://www.example.com",
