@@ -1,0 +1,26 @@
+<!-- ko with: registerExternal -->
+<hgroup class="title">
+    <h1>Register</h1>
+</hgroup>
+<form>
+    <fieldset class="form-horizontal">
+        <legend data-bind="text: 'Associate your ' + loginProvider() + ' account.'"></legend>
+        <p class="text-success">
+            You've successfully authenticated with <strong data-bind="text: loginProvider"></strong>.
+            Please enter a user name for this site below and click the Register button to finish logging in.
+        </p>
+        <ul class="text-error" data-bind="foreach: errors">
+            <li data-bind="text: $data"></li>
+        </ul>
+        <div class="control-group">
+            <label for="UserName" class="control-label">User name</label>
+            <div class="controls">
+                <input type="text" name="UserName" data-bind="value: userName, hasFocus: true" />
+            </div>
+        </div>
+        <div class="form-actions no-color">
+            <button type="submit" class="btn" data-bind="click: register, disable: registering">Sign up</button>
+        </div>
+    </fieldset>
+</form>
+<!-- /ko -->

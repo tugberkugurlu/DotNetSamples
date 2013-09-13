@@ -1,0 +1,109 @@
+﻿<!-- ko with: manage -->
+<div data-bind="visible: loading">Loading...</div>
+<div data-bind="visible: !loading()">
+    <p class="text-success" data-bind="text: message"></p>
+    <hgroup class="title">
+        <h1>Manage Account</h1>
+    </hgroup>
+    <section>
+        <div data-bind="with: changePassword">
+            <p>You're logged in as <strong data-bind="text: name"></strong>.</p>
+            <form>
+                <fieldset class="form-horizontal">
+                    <legend>Change your password.</legend>
+                    <ul class="text-error" data-bind="foreach: errors">
+                        <li data-bind="text: $data"></li>
+                    </ul>
+                    <div class="control-group">
+                        <label for="OldPassword" class="control-label">Old password</label>
+                        <div class="controls">
+                            <input type="password" name="OldPassword" data-bind="value: oldPassword" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="NewPassword" class="control-label">New password</label>
+                        <div class="controls">
+                            <input type="password" name="NewPassword" data-bind="value: newPassword" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="ConfirmPassword" class="control-label">Confirm new password</label>
+                        <div class="controls">
+                            <input type="password" name="ConfirmPassword" data-bind="value: confirmPassword" />
+                        </div>
+                    </div>
+                    <div class="form-actions no-color">
+                        <button type="submit" class="btn" data-bind="click: change, disable: changing">Change password</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+        <div data-bind="with: setPassword">
+            <p>You do not have a local username/password for this site. Add a local account so you can log in without an external login.</p>
+            <form>
+                <fieldset class="form-horizontal">
+                    <legend>Create Local Login</legend>
+                    <ul class="text-error" data-bind="foreach: errors">
+                        <li data-bind="text: $data"></li>
+                    </ul>
+                    <div class="control-group">
+                        <label for="NewPassword" class="control-label">New password</label>
+                        <div class="controls">
+                            <input type="password" name="NewPassword" data-bind="value: newPassword" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="ConfirmPassword" class="control-label">Confirm new password</label>
+                        <div class="controls">
+                            <input type="password" name="ConfirmPassword" data-bind="value: confirmPassword" />
+                        </div>
+                    </div>
+                    <div class="form-actions no-color">
+                        <button type="submit" class="btn" data-bind="click: set, disable: setting">Set password</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </section>
+    <section>
+        <ul class="text-error" data-bind="foreach: errors">
+            <li data-bind="text: $data"></li>
+        </ul>
+        <div data-bind="if: logins().length > 0">
+            <h2>Registered logins</h2>
+            <table class="table">
+                <tbody data-bind="foreach: logins">
+                    <tr>
+                        <td data-bind="text: loginProvider"></td>
+                        <td>
+                            <div data-bind="if: $parent.canRemoveLogin">
+                                <form>
+                                    <fieldset>
+                                        <button type="submit" class="btn" data-bind="attr: { title: 'Remove this ' + loginProvider() + ' credential from your account' }, click: remove, disable: removing">Remove</button>
+                                    </fieldset>
+                                </form>
+                            </div>
+                            <span data-bind="if: !$parent.canRemoveLogin()">&nbsp;</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2>Add an external login</h2>
+        <div class="message-info" data-bind="visible: !hasExternalLogin()">
+            <p>
+                There are no external authentication services configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=252166">this article</a>
+                for details on setting up this ASP.NET application to support logging in via external services.
+            </p>
+        </div>
+        <form data-bind="visible: hasExternalLogin">
+            <fieldset>
+                <legend>Use another service to log in.</legend>
+                <p data-bind="foreach: externalLoginProviders">
+                    <button type="submit" class="btn" data-bind="text: name, attr: { title: 'Log in using your ' + name() + ' account' }, click: login"></button>
+                </p>
+            </fieldset>
+        </form>
+    </section>
+</div>
+<!-- /ko -->

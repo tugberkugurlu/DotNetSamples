@@ -1,0 +1,35 @@
+<!-- ko with: register -->
+<hgroup class="title">
+    <h1>Register</h1>
+</hgroup>
+<form>
+    <fieldset class="form-horizontal">
+        <legend>Create a new account.</legend>
+        <ul class="text-error" data-bind="foreach: errors">
+            <li data-bind="text: $data"></li>
+        </ul>
+        <div class="control-group">
+            <label for="UserName" class="control-label">User name</label>
+            <div class="controls">
+                <input type="text" name="UserName" data-bind="value: userName, hasFocus: true" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="Password" class="control-label">Password</label>
+            <div class="controls">
+                <input type="password" name="Password" data-bind="value: password" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="ConfirmPassword" class="control-label">Confirm password</label>
+            <div class="controls">
+                <input type="password" name="ConfirmPassword" data-bind="value: confirmPassword" />
+            </div>
+        </div>
+        <div class="form-actions no-color">
+            <button type="submit" class="btn" data-bind="click: register, disable: registering">Register</button>
+        </div>
+        <p><a href="#" data-bind="click: login">Log in</a> if you already have a local account.</p>
+    </fieldset>
+</form>
+<!-- /ko -->

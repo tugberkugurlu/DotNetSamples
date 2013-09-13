@@ -1,0 +1,10 @@
+﻿body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+
+/* This CSS style removes the background-color of the from */
+.no-color {
+    background-color: white;
+    border-style: none;
+}
