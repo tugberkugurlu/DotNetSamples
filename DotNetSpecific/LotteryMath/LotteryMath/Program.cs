@@ -22,12 +22,11 @@ namespace LotteryMath
 
         static LotteryCoupon GenerateLotteryCoupon()
         {
-            List<int> numbers = new List<int>
+            List<int> numbers = new List<int>();
+            while (numbers.Count != 6)
             {
-                new Random(DateTime.Now.Ticks.GetHashCode()).Next(1, 64)
-            };
-
-            AddNumbers(numbers, 5, 6);
+                AddNewNumber(numbers);
+            }
 
             return new LotteryCoupon(
                 numbers.First(),
@@ -38,20 +37,12 @@ namespace LotteryMath
                 numbers.Skip(5).First());
         }
 
-        static void AddNumbers(List<int> numbers, int amount, int expectedCount)
+        static void AddNewNumber(List<int> numbers)
         {
-            for (int i = 0; i < amount; i++)
+            int num = new Random().Next(1, 64);
+            if (numbers.Any(x => x == num) == false)
             {
-                int num = new Random().Next(1, 64);
-                if (numbers.Any(x => x == num) == false)
-                {
-                    numbers.Add(num);
-                }
-            }
-
-            if (numbers.Count != expectedCount)
-            {
-                AddNumbers(numbers, expectedCount - numbers.Count, expectedCount);
+                numbers.Add(num);
             }
         }
     }
