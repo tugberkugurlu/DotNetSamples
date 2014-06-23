@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,9 +10,49 @@ namespace LotteryMath
 {
     class Program
     {
+        private readonly static ConcurrentBag<LotteryCoupon> Bag = new ConcurrentBag<LotteryCoupon>();
+        private readonly static IEnumerable<int> AllAvailableNumbers = Enumerable.Range(1, 64).ToList();
+
         static void Main(string[] args)
         {
-            IEnumerable<int> allAvailableNumbers = Enumerable.Range(1, 64).ToList();
+            LotteryCoupon coupon = GenerateLotteryCoupon();
+            Console.WriteLine(coupon);
+            Console.ReadLine();
+        }
+
+        static LotteryCoupon GenerateLotteryCoupon()
+        {
+            List<int> numbers = new List<int>
+            {
+                new Random(DateTime.Now.Ticks.GetHashCode()).Next(1, 64)
+            };
+
+            AddNumbers(numbers, 5, 6);
+
+            return new LotteryCoupon(
+                numbers.First(),
+                numbers.Skip(1).First(),
+                numbers.Skip(2).First(),
+                numbers.Skip(3).First(),
+                numbers.Skip(4).First(),
+                numbers.Skip(5).First());
+        }
+
+        static void AddNumbers(List<int> numbers, int amount, int expectedCount)
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                int num = new Random().Next(1, 64);
+                if (numbers.Any(x => x == num) == false)
+                {
+                    numbers.Add(num);
+                }
+            }
+
+            if (numbers.Count != expectedCount)
+            {
+                AddNumbers(numbers, expectedCount - numbers.Count, expectedCount);
+            }
         }
     }
 
