@@ -1,0 +1,24 @@
+﻿@model IEnumerable<System.Security.Claims.Claim>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>About</title>
+</head>
+<body>
+    <div>
+        <dl>
+            @foreach (var claim in Model)
+            {
+                <dt>@claim.Type</dt>
+                <dd>@claim.Value</dd>
+            }
+        </dl> 
+    </div>
+</body>
+</html>
