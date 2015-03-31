@@ -15,6 +15,7 @@ namespace CartesianProductSample
             IngredientGroup ingredientGroup3 = new IngredientGroup();
             IngredientGroup ingredientGroup4 = new IngredientGroup();
             IngredientGroup ingredientGroup5 = new IngredientGroup();
+            IngredientGroup ingredientGroup6 = new IngredientGroup();
 
             recipe2.Name = "Recipe2";
             ingredientGroup3.Ingredients.Add(new Food { Name = "Food8", Category = "Categor8" });
@@ -27,9 +28,14 @@ namespace CartesianProductSample
             ingredientGroup5.Ingredients.Add(new Food { Name = "Food3", Category = "Categor3" });
             ingredientGroup5.Ingredients.Add(new Food { Name = "Food4", Category = "Categor4" });
 
+            ingredientGroup6.Ingredients.Add(new Food { Name = "Food5", Category = "Categor5" });
+            ingredientGroup6.Ingredients.Add(new Food { Name = "Food10", Category = "Categor10" });
+            ingredientGroup6.Ingredients.Add(new Food { Name = "Food11", Category = "Category11" });
+
             recipe2.IngredientGroups.Add(ingredientGroup3);
             recipe2.IngredientGroups.Add(ingredientGroup4);
             recipe2.IngredientGroups.Add(ingredientGroup5);
+            recipe2.IngredientGroups.Add(ingredientGroup6);
 
             var recipes = new[] { recipe2 };
             WriteCombinationsByKnowingTheNumber(recipes);
@@ -74,6 +80,7 @@ namespace CartesianProductSample
             IEnumerable<string> results = from combination in ingredientNames.CombinationOf() 
                                          select string.Join(", ", combination);
 
+            Console.WriteLine(results.Count());
             foreach (string result in results)
             {
                 Console.WriteLine(result);
