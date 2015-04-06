@@ -9,6 +9,8 @@ namespace SerilogIntro
     {
         static void Main(string[] args)
         {
+            // ref: http://nblumhardt.com/2013/03/serilog/
+            
             const string logTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss} [{MachineName}, {ProcessId}, {ThreadId}] [{Level}] {Message}{NewLine}{Exception}";
             var logger = new LoggerConfiguration()
                 .Enrich.WithMachineName()
