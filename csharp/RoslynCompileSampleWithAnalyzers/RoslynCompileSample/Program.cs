@@ -51,13 +51,16 @@ namespace RoslynCompileSample
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)).WithAnalyzers(diagnosticAnalyzers);
 
+            ImmutableArray<Diagnostic> diagsnostics = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().Result;
+
             using (var ms = new MemoryStream())
             {
                 EmitResult result = compilationWithAnalyzers.Compilation.Emit(ms);
+                ImmutableArray<Diagnostic> allDiagsnostics = result.Diagnostics.Concat(diagsnostics).ToImmutableArray();
 
                 if (!result.Success)
                 {
-                    IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic => 
+                    IEnumerable<Diagnostic> failures = allDiagsnostics.Where(diagnostic => 
                         diagnostic.IsWarningAsError || 
                         diagnostic.Severity == DiagnosticSeverity.Error);
 
@@ -66,11 +69,11 @@ namespace RoslynCompileSample
                         Console.Error.WriteLine("ERROR: {0}: {1}", diagnostic.Id, diagnostic.GetMessage());
                     }
 
-                    WriteWarnings(result.Diagnostics);
+                    WriteWarnings(allDiagsnostics);
                 }
                 else
                 {
-                    WriteWarnings(result.Diagnostics);
+                    WriteWarnings(allDiagsnostics);
 
                     ms.Seek(0, SeekOrigin.Begin);
                     Assembly assembly = Assembly.Load(ms.ToArray());
