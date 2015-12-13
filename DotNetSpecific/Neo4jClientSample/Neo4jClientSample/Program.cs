@@ -191,6 +191,20 @@ namespace Neo4jClientSample
                 RETURN movie, collect(actor) as Actors
             */
 
+            /*      
+                MATCH (agency:Agency)-[:ACQUIRED]->(actor:Person)<-[:EMPLOYED]-(movie:Movie)
+                RETURN agency, actor, movie
+            */
+
+            var results = client.Cypher
+                .Match("(agency:Agency)-[:ACQUIRED]->(actor:Person)<-[:EMPLOYED]-(movie:Movie)")
+                .Return((agency, actor, movie) => new
+                {
+                    Agency = agency.As<Agency>(),
+                    Actor = actor.As<Person>(),
+                    Movie = movie.As<Movie>()
+                }).Results;
+
             // this is retrievable using the below now
             // MATCH(agencyA: Agency)
             // RETURN agencyA
