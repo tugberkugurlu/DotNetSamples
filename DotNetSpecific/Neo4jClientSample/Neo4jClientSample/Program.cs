@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Neo4jClient;
+using Newtonsoft.Json.Serialization;
 
 namespace Neo4jClientSample
 {
@@ -72,7 +73,11 @@ namespace Neo4jClientSample
         {
             // https://github.com/Readify/Neo4jClient/wiki/connecting#graph-client-basics
             // https://github.com/Readify/Neo4jClient/wiki/connecting#threading-and-lifestyles
-            var client = new GraphClient(new Uri("http://localhost:7474/db/data"), "neo4j", "1234567890");
+            var client = new GraphClient(new Uri("http://localhost:7474/db/data"), "neo4j", "1234567890")
+            {
+                JsonContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+
             client.Connect();
 
             // clean up /w relationships
@@ -156,6 +161,25 @@ namespace Neo4jClientSample
                 .AndWhere((Person actor1) => actor1.Name == "Actor-1")
                 .AndWhere((Person actor5) => actor5.Name == "Actor-5")
                 .Create("(movie)-[:EMPLOYED]->(actor1), (movie)-[:EMPLOYED]->(actor5)")
+                .ExecuteWithoutResultsAsync()
+                .Wait();
+
+            client.Cypher
+                .Match("(movie:Movie)", "(actor1:Person)", "(actor3:Person)", "(actor5:Person)")
+                .Where((Movie movie) => movie.Name == "Movie-b")
+                .AndWhere((Person actor1) => actor1.Name == "Actor-1")
+                .AndWhere((Person actor3) => actor3.Name == "Actor-3")
+                .AndWhere((Person actor5) => actor5.Name == "Actor-5")
+                .Create("(movie)-[:EMPLOYED]->(actor1), (movie)-[:EMPLOYED]->(actor3), (movie)-[:EMPLOYED]->(actor5)")
+                .ExecuteWithoutResultsAsync()
+                .Wait();
+
+            client.Cypher
+                .Match("(movie:Movie)", "(actor2:Person)", "(actor5:Person)")
+                .Where((Movie movie) => movie.Name == "Movie-c")
+                .AndWhere((Person actor2) => actor2.Name == "Actor-2")
+                .AndWhere((Person actor5) => actor5.Name == "Actor-5")
+                .Create("(movie)-[:EMPLOYED]->(actor2), (movie)-[:EMPLOYED]->(actor5)")
                 .ExecuteWithoutResultsAsync()
                 .Wait();
 
