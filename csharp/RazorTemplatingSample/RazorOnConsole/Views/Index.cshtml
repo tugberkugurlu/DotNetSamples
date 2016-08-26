@@ -1,0 +1,16 @@
+﻿@inherits RazorOnConsole.Views.BaseView<string>
+@using System.Linq
+
+@{
+    var foo = "bar" + "foo";
+    var link = "http://tugberkugurlu.com";
+}
+
+<a href="@link">@foo</a>
+
+@foreach (var i in Enumerable.Range(0, 10))
+{
+    @: <a href="#@(i)">@(i)</a>
+}
+
+<p>This is model: @Model..</p>

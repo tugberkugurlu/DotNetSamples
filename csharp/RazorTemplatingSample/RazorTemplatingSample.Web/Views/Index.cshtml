@@ -1,0 +1,18 @@
+﻿@using RazorTemplatingSample.Web
+@inherits RazorTemplatingSample.Web.BaseView<System.Collections.Generic.IEnumerable<RazorTemplatingSample.Web.Person>>
+<!DOCTYPE html>
+<html lang="en" class="static " data-root="/">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam commodo</title>
+</head>
+<body>
+    <ul>
+        @foreach (Person person in Model)
+        {
+            <li>@person.Name</li>
+        }
+    </ul>
+</body>
+</html>
