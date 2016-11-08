@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +15,8 @@ namespace RxSample
             // Comment out the sample you would like to run
 
             // HelloWorld();
-            // MeasureConccurenyLevel().Wait();
+            // RunObserversSync().Wait();
+            RunObserversAsync().Wait();
 
             Console.ReadLine();
         }
@@ -30,7 +33,7 @@ namespace RxSample
             subject.OnNext(45);
         }
 
-        private static async Task MeasureConccurenyLevel(CancellationToken cancellationToken = default(CancellationToken))
+        private static void RunObserversSync(CancellationToken cancellationToken = default(CancellationToken))
         {
             // With this way, each observer runs syncronously one at a time.
             // This is not really great for concurrent cases.
@@ -55,6 +58,37 @@ namespace RxSample
                 {
                     subject.OnNext(random.Next());
                 } while (cancellationToken.IsCancellationRequested == false);
+            }
+        }
+
+        // http://stackoverflow.com/questions/16658915/reactive-extensions-concurrency-within-the-subscriber
+        private static async Task RunObserversAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var source = Observable.Interval(TimeSpan.FromMilliseconds(4000))
+                .Do(x => Console.WriteLine("{0} Thread: {1} Source value: {2}",
+                    DateTime.Now,
+                    Thread.CurrentThread.ManagedThreadId, x))
+                .ObserveOn(NewThreadScheduler.Default);
+
+            using (var compositeDisposable = new CompositeDisposable())
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    var subName = i;
+                    var subscription = source.Subscribe(x =>
+                    {
+                        Thread.Sleep(5000);
+                        Console.WriteLine($"{subName}> {x}");
+                    });
+
+                    compositeDisposable.Add(subscription);
+                }
+
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                }
+                catch (TaskCanceledException) { }
             }
         }
     }
