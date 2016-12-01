@@ -1,5 +1,7 @@
 # Windows Virtual Disk Service and Windows Shadow Copy Service Samples
 
+These section contains some random samples on developing against Windows Virtual Disk Service (VDS) and Windows Shadow Copy Service (VSS).
+
 ## [Virtual Disk Service](https://msdn.microsoft.com/en-us/library/windows/desktop/bb986750(v=vs.85).aspx)
 
 ### [Differencing Disk](https://technet.microsoft.com/en-us/library/cc720381(v=ws.10).aspx)
