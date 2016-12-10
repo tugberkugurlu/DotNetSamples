@@ -21,7 +21,9 @@ namespace ConsoleApplication
 
             // HelloWorld();
             // RunObserversSync();
-            RunObserversAsync().Wait();
+            // RunObserversAsync().Wait();
+
+            RabbitMqObserver().Wait();
 
             Console.ReadLine();
         }
@@ -111,9 +113,14 @@ namespace ConsoleApplication
             }
         }
 
-        private static async Task RabbitMqObserver(MessageQueueSettings settings, CancellationToken cancellationToken = default(CancellationToken))
+        private static async Task RabbitMqObserver(CancellationToken cancellationToken = default(CancellationToken))
         {
             Sleep(TimeSpan.FromSeconds(5), "to let RabbitMQ start up");
+
+            var config = ConfigBuilder.Build();
+            var settings = new MessageQueueSettings();
+            ConfigurationBinder.Bind(config.GetSection("MessageQueue"), settings);
+
             using(var context = new RabbitContext(settings))
             {
                 var publisher = Task.Run(async () => 
@@ -131,7 +138,7 @@ namespace ConsoleApplication
                     using(var channel = context.CreateChannel())
                     {
                         var observable = RabbitContext.CreateSubject(channel);
-                        using(observable.Subscribe(message => Console.WriteLine(message)))
+                        using(observable.Subscribe(message => { Thread.Sleep(3000); Console.WriteLine(message); }))
                         {
                             await SleepTillCancelledAsync(cancellationToken);
                         }
