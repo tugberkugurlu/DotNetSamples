@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -219,6 +219,7 @@ namespace ConsoleApplication
 
                 // Per consumer limit. See http://www.rabbitmq.com/consumer-prefetch.html 
                 // and http://stackoverflow.com/a/8179850/463785
+                // Also see this for multithreading: http://stackoverflow.com/a/32592077/463785
                 channel.BasicQos(0, 1, false);
 
                 consumer.Received += (_, ea) => 
