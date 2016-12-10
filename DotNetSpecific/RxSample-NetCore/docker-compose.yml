@@ -1,0 +1,19 @@
+rxsample_rabbitmq:
+    build: .
+    dockerfile: docker-rabbitmq.dockerfile
+    container_name: rxsample-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      
+rxsample_app:
+    build: .
+    dockerfile: docker-app.dockerfile
+    container_name: rxsample-app
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RxSample_MessageQueue__HostName=rxsample_rabbitmq
+      - RxSample_MessageQueue__UserName=guest
+      - RxSample_MessageQueue__Password=guest
+    links:
+      - rxsample_rabbitmq

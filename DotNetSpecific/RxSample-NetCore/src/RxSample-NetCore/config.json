@@ -1,0 +1,7 @@
+{
+    "MessageQueue": {
+        "Hostname": "localhost",
+        "Username": "guest",
+        "Password": "guest"
+    }
+}
