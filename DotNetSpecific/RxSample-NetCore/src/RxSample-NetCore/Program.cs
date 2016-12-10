@@ -15,6 +15,8 @@ namespace ConsoleApplication
 {
     public class Program
     {
+        private static readonly int ConcurrencyLevel = Environment.ProcessorCount * 2;
+
         public static void Main(string[] args)
         {
             // Comment out the sample you would like to run
@@ -115,6 +117,7 @@ namespace ConsoleApplication
 
         private static async Task RabbitMqObserver(CancellationToken cancellationToken = default(CancellationToken))
         {
+            Console.WriteLine($"ConcurrencyLevel: {ConcurrencyLevel}");
             Sleep(TimeSpan.FromSeconds(5), "to let RabbitMQ start up");
 
             var config = ConfigBuilder.Build();
@@ -220,7 +223,7 @@ namespace ConsoleApplication
                 // Per consumer limit. See http://www.rabbitmq.com/consumer-prefetch.html 
                 // and http://stackoverflow.com/a/8179850/463785
                 // Also see this for multithreading: http://stackoverflow.com/a/32592077/463785
-                channel.BasicQos(0, 1, false);
+                channel.BasicQos(0, (ushort)(ConcurrencyLevel), false);
 
                 consumer.Received += (_, ea) => 
                 {
