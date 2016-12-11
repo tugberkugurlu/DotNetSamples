@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RxSample_NetCore;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -68,11 +69,21 @@ namespace ConsoleApplication
                 var subscriber = Task.Run(async () => 
                 {
                     // Action to invoke for each element in the observable sequence.
-                    Action<string> onNext = message => 
+                    Action<IMessage<string>> onNext = message => 
                     {
-                        logger.LogDebug("Started handling {message}", message);
-                        Thread.Sleep(3000);
-                        Console.WriteLine(message);
+                        logger.LogDebug("Started handling {messageId}", message.Id);
+
+                        try
+                        {
+                            Thread.Sleep(3000);
+                            Console.WriteLine(message.GetContent());
+                            message.CompleteAsync().Wait();
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(0, ex, "Error while handling {messageId}", message.Id);
+                            message.AbandonAsync().Wait();
+                        }
                     };
 
                     // Action to invoke upon exceptional termination of the observable sequence
@@ -155,6 +166,7 @@ namespace ConsoleApplication
                 {
                     var bodyBytes = Encoding.UTF8.GetBytes(message);
                     var properties = channel.CreateBasicProperties();
+                    properties.MessageId = Guid.NewGuid().ToString("N");
                     properties.Persistent = true;
                     properties.ContentType = "text/plain";
 
@@ -166,10 +178,10 @@ namespace ConsoleApplication
             public void Dispose() => _connection.Dispose();
 
             // https://weblogs.asp.net/sweinstein/16-ways-to-create-iobservables-without-implementing-iobservable
-            public Subscription<string> CreateSubscription() 
+            public Subscription<IMessage<string>> CreateSubscription() 
             {
                 var compositeDisposable = new CompositeDisposable();   
-                var subject = Subject.Synchronize(new ReplaySubject<string>());
+                var subject = Subject.Synchronize(new ReplaySubject<IMessage<string>>());
 
                 for(var i = 0; i < ConcurrencyLevel; i++)
                 {
@@ -183,17 +195,14 @@ namespace ConsoleApplication
 
                     consumer.Received += (_, ea) => 
                     {
-                        var message = Encoding.UTF8.GetString(ea.Body);
-                        _logger.LogDebug("Recieved {message}", message);
+                        var message = new SimpleRabbitMessage(channel, ea);
+                        _logger.LogDebug("Recieved {messageId}", message.Id);
 
                         // This is really a dispatch. Doesn't care for it to be consumed.
                         // So, we should really not Ack or Nack here.
                         // That's part of the consumer to handle.
                         subject.OnNext(message);
-                        _logger.LogDebug("Handled {message}", message);
-
-                        // channel.BasicAck(ea.DeliveryTag, multiple: false);
-                        // _logger.LogDebug("Acked {message}", message);
+                        _logger.LogDebug("Dispatched {messageId} for handling", message.Id);
                     };
 
                     consumer.Shutdown += (_, ea) => 
@@ -211,7 +220,7 @@ namespace ConsoleApplication
                     compositeDisposable.Add(channel);
                 }
 
-                return new Subscription<string>(subject, compositeDisposable);
+                return new Subscription<IMessage<string>>(subject, compositeDisposable);
             }
         }
 
