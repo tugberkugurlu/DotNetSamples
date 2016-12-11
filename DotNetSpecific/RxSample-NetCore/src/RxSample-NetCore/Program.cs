@@ -118,7 +118,7 @@ namespace ConsoleApplication
         private static async Task RabbitMqObserver(CancellationToken cancellationToken = default(CancellationToken))
         {
             Console.WriteLine($"ConcurrencyLevel: {ConcurrencyLevel}");
-            Sleep(TimeSpan.FromSeconds(5), "to let RabbitMQ start up");
+            Sleep(TimeSpan.FromSeconds(10), "to let RabbitMQ start up");
 
             var config = ConfigBuilder.Build();
             var settings = new MessageQueueSettings();
@@ -130,7 +130,7 @@ namespace ConsoleApplication
                 {
                     do
                     {
-                        context.Publish(new Bogus.Faker().Lorem.Sentence(100));
+                        context.Publish(new Bogus.Faker().Lorem.Sentence(20));
                         await Task.Delay(TimeSpan.FromMilliseconds(100));
 
                     } while (cancellationToken.IsCancellationRequested == false);   
@@ -138,13 +138,10 @@ namespace ConsoleApplication
 
                 var subscriber = Task.Run(async () => 
                 {
-                    using(var channel = context.CreateChannel())
+                    using(var subscription = context.CreateSubscription())
+                    using(subscription.Observable.ObserveOn(TaskPoolScheduler.Default).Subscribe(message => { Thread.Sleep(3000); Console.WriteLine(message); }))
                     {
-                        var observable = RabbitContext.CreateSubject(channel);
-                        using(observable.Subscribe(message => { Thread.Sleep(3000); Console.WriteLine(message); }))
-                        {
-                            await SleepTillCancelledAsync(cancellationToken);
-                        }
+                        await SleepTillCancelledAsync(cancellationToken);
                     }
                 });
 
@@ -167,6 +164,10 @@ namespace ConsoleApplication
             catch (TaskCanceledException) { }
         }
 
+        /// <remarks>
+        /// http://www.rabbitmq.com/releases/rabbitmq-dotnet-client/v2.8.1/rabbitmq-dotnet-client-2.8.1-user-guide.pdf
+        /// https://groups.google.com/forum/#!topic/rabbitmq-users/qQLMY94rdBc
+        /// </remarks>
         private class RabbitContext : IDisposable
         {
             private const string ExchangeName = "messages";
@@ -213,28 +214,52 @@ namespace ConsoleApplication
             public IModel CreateChannel() => _connection.CreateModel();
             public void Dispose() => _connection.Dispose();
 
-            public static IObservable<string> CreateSubject(IModel channel) 
+            public Subscription<string> CreateSubscription() 
             {
-                if(channel == null) throw new ArgumentNullException(nameof(channel));
-                
-                var subject = new ReplaySubject<string>();
-                var consumer = new EventingBasicConsumer(channel);
+                var compositeDisposable = new CompositeDisposable();   
+                var subject = Subject.Synchronize(new ReplaySubject<string>());
 
-                // Per consumer limit. See http://www.rabbitmq.com/consumer-prefetch.html 
-                // and http://stackoverflow.com/a/8179850/463785
-                // Also see this for multithreading: http://stackoverflow.com/a/32592077/463785
-                channel.BasicQos(0, (ushort)(ConcurrencyLevel), false);
-
-                consumer.Received += (_, ea) => 
+                for(var i = 0; i < ConcurrencyLevel; i++) 
                 {
-                    var message = Encoding.UTF8.GetString(ea.Body);
-                    subject.OnNext(message);
-                    channel.BasicAck(ea.DeliveryTag, multiple: false);
-                };
+                    var channel = CreateChannel();
+                    var consumer = new EventingBasicConsumer(channel);
 
-                channel.BasicConsume(QueueName, noAck: false, consumer: consumer);
+                    // Per consumer limit. See http://www.rabbitmq.com/consumer-prefetch.html 
+                    // and http://stackoverflow.com/a/8179850/463785
+                    // Also see this for fetching more than one: http://stackoverflow.com/a/32592077/463785
+                    channel.BasicQos(0, 1, false);
 
-                return subject;
+                    consumer.Received += (_, ea) => 
+                    {
+                        var message = Encoding.UTF8.GetString(ea.Body);
+                        subject.OnNext(message);
+                        channel.BasicAck(ea.DeliveryTag, multiple: false);
+                    };
+
+                    channel.BasicConsume(QueueName, noAck: false, consumer: consumer);
+
+                    compositeDisposable.Add(channel);
+                }
+
+                return new Subscription<string>(subject, compositeDisposable);
+            }
+        }
+
+        public class Subscription<TResult> : IDisposable
+        {
+            private readonly IDisposable _disposable;
+
+            public Subscription(IObservable<TResult> observable, IDisposable disposable)
+            {
+                _disposable = disposable;
+                Observable = observable;
+            }
+
+            public IObservable<TResult> Observable { get; }
+
+            public void Dispose()
+            {
+                _disposable?.Dispose();
             }
         }
     }
