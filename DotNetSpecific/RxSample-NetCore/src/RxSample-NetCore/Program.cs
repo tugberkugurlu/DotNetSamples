@@ -29,6 +29,7 @@ namespace ConsoleApplication
         }
 
         // http://stackoverflow.com/questions/16658915/reactive-extensions-concurrency-within-the-subscriber
+        // https://social.msdn.microsoft.com/Forums/en-US/6ef0caba-709d-450a-830d-8fc80f0a815d/the-rx-serialization-guarantee?forum=rx
         private static async Task RabbitMqObserver(ILogger logger, CancellationToken cancellationToken = default(CancellationToken))
         {
             logger.LogInformation("ConcurrencyLevel: {concurrencyLevel}", ConcurrencyLevel);
@@ -38,7 +39,7 @@ namespace ConsoleApplication
             var settings = new MessageQueueSettings();
             ConfigurationBinder.Bind(config.GetSection("MessageQueue"), settings);
 
-            using(var context = new RabbitContext(settings))
+            using(var context = new RabbitContext(settings, logger))
             {
                 var publisher = Task.Run(async () => 
                 {
@@ -52,8 +53,28 @@ namespace ConsoleApplication
 
                 var subscriber = Task.Run(async () => 
                 {
+                    // Action to invoke for each element in the observable sequence.
+                    Action<string> onNext = message => 
+                    {
+                        logger.LogDebug("Started handling {message}", message);
+                        Thread.Sleep(3000);
+                        Console.WriteLine(message);
+                    };
+
+                    // Action to invoke upon exceptional termination of the observable sequence
+                    Action<Exception> onError = ex => 
+                    {
+                        logger.LogError(0, ex, "Exceptional termination of the observable sequence");
+                    };
+
+                    // Action to invoke upon graceful termination of the observable sequence.
+                    Action onCompleted = () => 
+                {
+                        logger.LogDebug("Graceful termination of the observable sequence");
+                    };
+
                     using(var subscription = context.CreateSubscription())
-                    using(subscription.Observable.ObserveOn(TaskPoolScheduler.Default).Subscribe(message => { Thread.Sleep(3000); Console.WriteLine(message); }))
+                    using(subscription.Observable.ObserveOn(NewThreadScheduler.Default).Subscribe(onNext, onError, onCompleted))
                     {
                         await SleepTillCancelledAsync(cancellationToken);
                     }
@@ -88,8 +109,9 @@ namespace ConsoleApplication
             private const string QueueName = "message_processor";
             private const string RoutingKey = "message_received";
             private readonly IConnection _connection;
+            private readonly ILogger _logger;
 
-            public RabbitContext(MessageQueueSettings settings) 
+            public RabbitContext(MessageQueueSettings settings, ILogger logger) 
             {
                 var rabbitConnFactory = new ConnectionFactory
                 {
@@ -103,6 +125,7 @@ namespace ConsoleApplication
                 };
 
                 _connection = rabbitConnFactory.CreateConnection();
+                _logger = logger;
 
                 using (var channel = _connection.CreateModel())
                 {
@@ -128,6 +151,7 @@ namespace ConsoleApplication
             public IModel CreateChannel() => _connection.CreateModel();
             public void Dispose() => _connection.Dispose();
 
+            // https://weblogs.asp.net/sweinstein/16-ways-to-create-iobservables-without-implementing-iobservable
             public Subscription<string> CreateSubscription() 
             {
                 var compositeDisposable = new CompositeDisposable();   
@@ -146,8 +170,26 @@ namespace ConsoleApplication
                     consumer.Received += (_, ea) => 
                     {
                         var message = Encoding.UTF8.GetString(ea.Body);
+                        _logger.LogDebug("Recieved {message}", message);
+
+                        // This is really a dispatch. Doesn't care for it to be consumed.
+                        // So, we should really not Ack or Nack here.
+                        // That's part of the consumer to handle.
                         subject.OnNext(message);
-                        channel.BasicAck(ea.DeliveryTag, multiple: false);
+                        _logger.LogDebug("Handled {message}", message);
+
+                        // channel.BasicAck(ea.DeliveryTag, multiple: false);
+                        // _logger.LogDebug("Acked {message}", message);
+                    };
+
+                    consumer.Shutdown += (_, ea) => 
+                    {
+                        _logger.LogWarning("Consumer has been shut down because of {cause} with {replyCode} for {replyText}", 
+                            ea.Cause, 
+                            ea.ReplyCode, 
+                            ea.ReplyText);
+
+                        subject.OnCompleted();
                     };
 
                     channel.BasicConsume(QueueName, noAck: false, consumer: consumer);
