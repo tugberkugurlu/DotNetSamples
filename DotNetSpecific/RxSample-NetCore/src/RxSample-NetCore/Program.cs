@@ -3,6 +3,8 @@ using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,8 +26,20 @@ namespace ConsoleApplication
         {
             var loggerFactory = LoggerFactoryBuilder.Build();
             var logger = loggerFactory.CreateLogger<Program>();
-            RabbitMqObserver(logger).Wait();
-            Console.ReadLine();
+            var cts = new CancellationTokenSource();
+
+            // see for SIGTERM support of coreclr: https://github.com/dotnet/coreclr/issues/2688
+            // also see https://github.com/Microsoft/vsts-agent/issues/215
+            // also see https://github.com/dotnet/corefx/issues/5205
+            // For all UNIX Signals, see https://github.com/dotnet/corefx/issues/3188
+            var currentAssembly = typeof(Program).GetTypeInfo().Assembly;
+            AssemblyLoadContext.GetLoadContext(currentAssembly).Unloading += (assemblyLoadContext) => 
+            {
+                logger.LogWarning("Termination requested");
+                cts.Cancel();
+            };
+
+            RabbitMqObserver(logger, cts.Token).Wait();
         }
 
         // http://stackoverflow.com/questions/16658915/reactive-extensions-concurrency-within-the-subscriber
@@ -69,7 +83,7 @@ namespace ConsoleApplication
 
                     // Action to invoke upon graceful termination of the observable sequence.
                     Action onCompleted = () => 
-                {
+                    {
                         logger.LogDebug("Graceful termination of the observable sequence");
                     };
 
@@ -157,7 +171,7 @@ namespace ConsoleApplication
                 var compositeDisposable = new CompositeDisposable();   
                 var subject = Subject.Synchronize(new ReplaySubject<string>());
 
-                for(var i = 0; i < ConcurrencyLevel; i++) 
+                for(var i = 0; i < ConcurrencyLevel; i++)
                 {
                     var channel = CreateChannel();
                     var consumer = new EventingBasicConsumer(channel);
@@ -245,7 +259,7 @@ namespace ConsoleApplication
         {
             var serilogLogger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .MinimumLevel.Verbose()
+                .MinimumLevel.Information()
                 .CreateLogger();
             
             var loggerFactory = new LoggerFactory();
