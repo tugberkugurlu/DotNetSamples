@@ -7,9 +7,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ConsoleApplication
 {
@@ -19,15 +22,17 @@ namespace ConsoleApplication
 
         public static void Main(string[] args)
         {
-            RabbitMqObserver().Wait();
+            var loggerFactory = LoggerFactoryBuilder.Build();
+            var logger = loggerFactory.CreateLogger<Program>();
+            RabbitMqObserver(logger).Wait();
             Console.ReadLine();
         }
 
         // http://stackoverflow.com/questions/16658915/reactive-extensions-concurrency-within-the-subscriber
-        private static async Task RabbitMqObserver(CancellationToken cancellationToken = default(CancellationToken))
+        private static async Task RabbitMqObserver(ILogger logger, CancellationToken cancellationToken = default(CancellationToken))
         {
-            Console.WriteLine($"ConcurrencyLevel: {ConcurrencyLevel}");
-            Sleep(TimeSpan.FromSeconds(10), "to let RabbitMQ start up");
+            logger.LogInformation("ConcurrencyLevel: {concurrencyLevel}", ConcurrencyLevel);
+            Sleep(logger, TimeSpan.FromSeconds(10), "to let RabbitMQ start up");
 
             var config = ConfigBuilder.Build();
             var settings = new MessageQueueSettings();
@@ -58,9 +63,9 @@ namespace ConsoleApplication
             }
         }
 
-        private static void Sleep(TimeSpan sleepAmount, string message) 
+        private static void Sleep(ILogger logger, TimeSpan sleepAmount, string message) 
         {
-            Console.WriteLine($"Waiting for {sleepAmount}: {message}");
+            logger.LogInformation("Waiting for {sleepAmount}: {message}", sleepAmount, message);
             Thread.Sleep(sleepAmount);
         }
 
@@ -189,6 +194,22 @@ namespace ConsoleApplication
                 .AddJsonFile("config.json")
                 .AddEnvironmentVariables("RxSample_")
                 .Build();
+        }
+    }
+
+    public static class LoggerFactoryBuilder
+    {
+        public static ILoggerFactory Build() 
+        {
+            var serilogLogger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .MinimumLevel.Verbose()
+                .CreateLogger();
+            
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddSerilog(serilogLogger);
+
+            return loggerFactory;
         }
     }
 }
