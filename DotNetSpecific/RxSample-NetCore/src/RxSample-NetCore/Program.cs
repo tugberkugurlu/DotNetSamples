@@ -68,8 +68,7 @@ namespace ConsoleApplication
 
                 var subscriber = Task.Run(async () => 
                 {
-                    // Action to invoke for each element in the observable sequence.
-                    Action<IMessage<string>> onNext = message => 
+                    Action<IMessage<string>> onNextImpl = message => 
                     {
                         logger.LogDebug("Started handling {messageId}", message.Id);
 
@@ -85,6 +84,9 @@ namespace ConsoleApplication
                             message.AbandonAsync().Wait();
                         }
                     };
+
+                    // Action to invoke for each element in the observable sequence.
+                    Action<IMessage<string>> onNext = message => Task.Run(() => onNextImpl(message));
 
                     // Action to invoke upon exceptional termination of the observable sequence
                     Action<Exception> onError = ex => 
