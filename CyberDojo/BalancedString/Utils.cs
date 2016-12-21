@@ -4,6 +4,9 @@ namespace CodilityTest
 {
     public class Utils
     {
+        // http://codereview.stackexchange.com/questions/45916/check-for-balanced-parentheses
+        // http://stackoverflow.com/questions/140468/what-is-the-maximum-possible-length-of-a-net-string
+
         private static readonly IDictionary<char, char> OpenCloseMappings = new Dictionary<char, char>
         {
             { '(', ')' },
@@ -21,51 +24,17 @@ namespace CodilityTest
 
         private static bool IsStringBalancedImpl(string value)
         {
-            // We are safe in terms of size of string. So, assume index is int.
-            // http://stackoverflow.com/questions/140468/what-is-the-maximum-possible-length-of-a-net-string
-            var indicesToSkip = new HashSet<int>();
-
+            var stack = new Stack<char>();
             for (int i = 0; i < value.Length; i++)
             {
-                if(indicesToSkip.Contains(i)) 
-                { 
-                    continue; 
+                var currentChar = value[i];
+                if(OpenCloseMappings.ContainsKey(currentChar))
+                {
+                    stack.Push(currentChar);
                 }
-
-                var currentCharToCheck = value[i];
-                char closePair;
-
-                if(!OpenCloseMappings.TryGetValue(currentCharToCheck, out closePair))
+                else if (stack.Count == 0 || currentChar != OpenCloseMappings[stack.Pop()])
                 {
                     return false;
-                }
-                else
-                {
-                    var isLast = i == (value.Length - 1);
-                    if(isLast)
-                    {
-                        // If we haven't skipped this index and we are here, return false.
-                        return false;
-                    }
-                    else 
-                    {
-                        var correspondingCharIndex = value.Length - i - 1;
-                        var nextChar = value[i + 1];
-                        var correspondingChar = value[correspondingCharIndex];
-
-                        if(nextChar == closePair)
-                        {
-                            indicesToSkip.Add(i + 1);
-                        }
-                        else if(correspondingChar == closePair)
-                        {
-                            indicesToSkip.Add(correspondingCharIndex);
-                        }
-                        else 
-                        {
-                            return false;
-                        }
-                    }
                 }
             }
 
