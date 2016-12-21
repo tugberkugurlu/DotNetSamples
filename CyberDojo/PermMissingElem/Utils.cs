@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace CodilityTest
@@ -16,25 +17,16 @@ namespace CodilityTest
             expected worst-case space complexity is O(1), beyond input storage (not counting the storage required for input arguments).
         */
 
+        // PermMissingElem
+        // https://codility.com/demo/results/trainingP7CBEF-J6J/#task-0
+        // http://codereview.stackexchange.com/a/129277/9622
+
         public static int FindMissing(int[] A)
         {
-            var sortedList = A.OrderByDescending(x => x);
-
-            if(sortedList.Last() != 1)
-            {
-                return 1;
-            }
-
-            for (int i = 0; i < A.Length; i++)
-            {
-                var current = sortedList.ElementAt(i);
-                if((current - sortedList.ElementAt(i + 1)) > 1)
-                {
-                    return current - 1;
-                }
-            }
-
-            throw new NotSupportedException();
+            var n = A.Length + 1;
+            var sumOfAllElements = (decimal.Parse(n.ToString(CultureInfo.InvariantCulture)) * (1 + n)) / 2;
+            var sumOfCurrent = A.Sum(x => decimal.Parse(x.ToString(CultureInfo.InvariantCulture)));
+            return (int)(sumOfAllElements - sumOfCurrent);
         }
     }
 }
