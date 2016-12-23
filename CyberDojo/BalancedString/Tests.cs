@@ -46,6 +46,7 @@ namespace CodilityTest
         [InlineData("<({([)})[]>")]
         [InlineData("[(])")]
         [InlineData("([}])")]
+        [InlineData("{{{{")]
         public void ShouldFail(string value)
         {
             // ACT

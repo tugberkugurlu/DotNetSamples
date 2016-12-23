@@ -7,6 +7,9 @@ namespace CodilityTest
         // http://codereview.stackexchange.com/questions/45916/check-for-balanced-parentheses
         // http://stackoverflow.com/questions/140468/what-is-the-maximum-possible-length-of-a-net-string
 
+        // codility: https://codility.com/programmers/lessons/7-stacks_and_queues/brackets/
+        // my first go: https://codility.com/demo/results/trainingJJDMJU-45C/
+
         private static readonly IDictionary<char, char> OpenCloseMappings = new Dictionary<char, char>
         {
             { '(', ')' },
@@ -38,7 +41,7 @@ namespace CodilityTest
                 }
             }
 
-            return true;
+            return stack.Count == 0 && true;
         }
     }
 }
