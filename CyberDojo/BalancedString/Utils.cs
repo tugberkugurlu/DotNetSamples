@@ -9,6 +9,7 @@ namespace CodilityTest
 
         // codility: https://codility.com/programmers/lessons/7-stacks_and_queues/brackets/
         // my first go: https://codility.com/demo/results/trainingJJDMJU-45C/
+        // this impl: https://codility.com/demo/results/trainingR8RDYP-5XQ/
 
         private static readonly IDictionary<char, char> OpenCloseMappings = new Dictionary<char, char>
         {
