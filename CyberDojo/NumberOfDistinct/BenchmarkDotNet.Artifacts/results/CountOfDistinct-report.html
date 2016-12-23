@@ -23,10 +23,18 @@ dotnet cli version=1.0.0-preview2-1-003177
 <pre><code></code></pre>
 
 <table>
-<thead><tr><th>Method</th><th>Mean</th><th>StdErr</th><th>StdDev</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+<thead><tr><th>      Method</th><th>    Mean</th><th>StdErr</th><th> StdDev</th><th>  Median</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
 </tr>
-</thead><tbody><tr><td>WithLinq</td><td>6.8006 ms</td><td>0.0363 ms</td><td>0.1407 ms</td><td>841.6667</td><td>712.5000</td><td>702.0833</td><td>4.11 MB</td>
-</tr><tr><td>WithoutLinq</td><td>6.1493 ms</td><td>0.0904 ms</td><td>0.8766 ms</td><td>355.6985</td><td>355.6985</td><td>355.6985</td><td>1.74 MB</td>
+</thead><tbody><tr><td> WithLinq100</td><td>4.5519 us</td><td>0.0191 us</td><td>0.0740 us</td><td>4.5367 us</td><td>2.5523</td><td> -</td><td> -</td><td>4.3 kB</td>
+</tr><tr><td>WithoutLinq100</td><td>3.2431 us</td><td>0.0269 us</td><td>0.1006 us</td><td>3.2063 us</td><td>0.9918</td><td> -</td><td> -</td><td>1.85 kB</td>
+</tr><tr><td>WithLinq10000</td><td>611.6177 us</td><td>1.9356 us</td><td>6.9789 us</td><td>610.4871 us</td><td>211.4258</td><td>68.8477</td><td>68.8477</td><td>517.8 kB</td>
+</tr><tr><td>WithoutLinq10000</td><td>358.2175 us</td><td>1.2289 us</td><td>4.7596 us</td><td>357.5338 us</td><td>50.5859</td><td>25.0651</td><td>25.0651</td><td>158.31 kB</td>
+</tr><tr><td>WithLinq100000</td><td>6,837.4189 us</td><td>37.9723 us</td><td>142.0795 us</td><td>6,807.7043 us</td><td>708.3333</td><td>583.3333</td><td>581.2500</td><td>4.07 MB</td>
+</tr><tr><td>WithoutLinq100000</td><td>4,535.0311 us</td><td>18.7528 us</td><td>67.6143 us</td><td>4,510.0612 us</td><td>187.5000</td><td>187.5000</td><td>187.5000</td><td>1.2 MB</td>
+</tr><tr><td>WithLinq500000</td><td>49,422.2958 us</td><td>190.8018 us</td><td>738.9720 us</td><td>49,415.8006 us</td><td>416.6667</td><td>291.6667</td><td>291.6667</td><td>13.92 MB</td>
+</tr><tr><td>WithoutLinq500000</td><td>42,026.4738 us</td><td>573.6189 us</td><td>5,501.9594 us</td><td>39,516.0321 us</td><td>120.8333</td><td>120.8333</td><td>120.8333</td><td>5.61 MB</td>
+</tr><tr><td>WithLinq1000000</td><td>6,862.8489 us</td><td>20.7542 us</td><td>74.8304 us</td><td>6,855.2981 us</td><td>772.9167</td><td>639.5833</td><td>639.5833</td><td>4.07 MB</td>
+</tr><tr><td>WithoutLinq1000000</td><td>5,183.1393 us</td><td>70.8731 us</td><td>661.0606 us</td><td>4,914.1731 us</td><td>170.8333</td><td>170.8333</td><td>170.8333</td><td>1.2 MB</td>
 </tr></tbody></table>
 </body>
 </html>
