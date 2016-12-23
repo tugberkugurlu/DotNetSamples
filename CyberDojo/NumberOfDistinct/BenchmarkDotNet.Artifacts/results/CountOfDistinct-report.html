@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>CountOfDistinct</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.10.1, OS=OSX
+Processor=?, ProcessorCount=4
+Frequency=1000000000 Hz, Resolution=1.0000 ns, Timer=UNKNOWN
+dotnet cli version=1.0.0-preview2-1-003177
+  [Host]     : .NET Core 4.6.24628.01, 64bit RyuJIT
+  DefaultJob : .NET Core 4.6.24628.01, 64bit RyuJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>Mean</th><th>StdErr</th><th>StdDev</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>WithLinq</td><td>6.8006 ms</td><td>0.0363 ms</td><td>0.1407 ms</td><td>841.6667</td><td>712.5000</td><td>702.0833</td><td>4.11 MB</td>
+</tr><tr><td>WithoutLinq</td><td>6.1493 ms</td><td>0.0904 ms</td><td>0.8766 ms</td><td>355.6985</td><td>355.6985</td><td>355.6985</td><td>1.74 MB</td>
+</tr></tbody></table>
+</body>
+</html>
