@@ -15,13 +15,16 @@ namespace CodilityTest
         {
             var random = new Random();
 
-            _aMillionIntegers = Enumerable.Range(0, 100000)
-                .Select(_ => random.Next(-1000000, 1000000))
+            // N is an integer within the range [2..100,000];
+            // each element of array A is an integer within the range [−1,000..1,000].
+
+            _aMillionIntegers = Enumerable.Range(2, 100000)
+                .Select(_ => random.Next(-1000, 1000))
                 .ToArray();
         }
 
         [Benchmark]
-        public int WithoutLinq1000000() => Utils.GetMinimalDifference(_aMillionIntegers);
+        public int OptimizedWith100000Input() => Utils.GetMinimalDifference(_aMillionIntegers);
     }
 
     public static class BenchmarkTests
