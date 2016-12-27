@@ -1,10 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace CodilityTest
 {
     public static class Utils
     {
-        public static long Multiply(int value)
+        public static void Do(int A)
         {
-            return (long)(value) * 2;
         }
     }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace CodilityTest
@@ -7,14 +9,8 @@ namespace CodilityTest
     {
         [Theory]
         [InlineData(10, 20)]
-        [InlineData(Int32.MaxValue, 4294967294)]
-        public void ShouldMultiplyCorrectly(int input, long expected)
+        public void ShouldDoIt(int input, long expected)
         {
-            // ACT
-            var result = Utils.Multiply(input);
-
-            // ASSERT
-            Assert.Equal(expected, result);
         }
     }
 }
